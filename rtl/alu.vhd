@@ -52,12 +52,11 @@ architecture Kaiser of alu is
 
     signal alu_internal_result : std_logic_vector(DATA_WIDTH-1 downto 0);
     
-    signal diff : signed(DATA_WIDTH-1 downto 0);
     
 
 begin
 
-    process(a, b, alu_ctrl, shamt, alu_internal_result) -- Burası bir kablonun çıkış kısmıdır yani elektrik sinaylinin çıkış kısmıdır
+    process(all) -- Burası bir kablonun çıkış kısmıdır yani elektrik sinaylinin çıkış kısmıdır
     begin
         case alu_ctrl is 
             when "00000" =>
@@ -68,7 +67,30 @@ begin
             alu_internal_result <= std_logic_vector(unsigned(a) - unsigned(b));
             when "00010" =>
             alu_internal_result <= a and b;
-
+            when "00011" =>
+            alu_internal_result <= a or b;
+            when "00100" =>
+            alu_internal_result <= a xor b;
+            when "00101" =>
+            alu_internal_result <= not(a or b);
+            when "00110" =>
+            alu_internal_result <= std_logic_vector(shift_left(unsigned(a), to_integer(unsigned(shamt))));
+            when "00111" =>
+            alu_internal_result <= std_logic_vector(shift_right(unsigned(a), to_integer(unsigned(shamt))));
+            when "01000" =>
+            alu_internal_result <= std_logic_vector(shift_right(signed(a), to_integer(unsigned(shamt))));
+            when "01001" =>
+            if signed(a) < signed(b) then
+            alu_internal_result <= x"00000001";
+            else
+            alu_internal_result <= x"00000000";
+            end if;
+            when "01010" =>
+            if unsigned(a) < unsigned(b) then
+                alu_internal_result <= (others => '1');
+            else
+                alu_internal_result <= (others => '0');
+            end if;
             when others =>
             alu_internal_result <= (others => '0');
                 
@@ -77,7 +99,7 @@ begin
         end process;
 
         result <= alu_internal_result;
-        
+
         zero <= '1' when (alu_internal_result = x"0000_0000") else '0';
 
     

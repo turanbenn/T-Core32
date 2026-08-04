@@ -28,12 +28,16 @@ use IEEE.NUMERIC_STD.ALL;
 
 -- Entity
 entity alu is
+    generic (
+        DATA_WIDTH : integer := 32; -- veri 32bit
+        CTRL_WIDTH : integer := 5   -- alu kontrol 5 bit
+    );
     port (
-        a     : in std_logic_vector(31 downto 0); -- 1. 32-bitlik Sayı
-        b        : in  std_logic_vector(31 downto 0); -- 2. 32-bitlik Sayı
-        alu_ctrl     : in std_logic_vector(4 downto 0); -- 5-bitlik İşlem Kodu
+        a     : in std_logic_vector(DATA_WIDTH-1 downto 0); -- 1. 32-bitlik Sayı
+        b        : in  std_logic_vector(DATA_WIDTH-1 downto 0); -- 2. 32-bitlik Sayı
+        alu_ctrl     : in std_logic_vector(CTRL_WIDTH-1 downto 0); -- 5-bitlik İşlem Kodu
         shamt    :  in  std_logic_vector(4 downto 0); -- 5-bitlik giriş Kodu
-        result   : out std_logic_vector(31 downto 0); -- 32-bitlik Sonuç
+        result   : out std_logic_vector(DATA_WIDTH-1 downto 0); -- 32-bitlik Sonuç
         zero     :  out std_logic -- 1-bitlik Sıfır
 
         -- Port kısmı giriş ve çıkış yani şöyle bir devre için 2 kablo bağladınız ve oradan 1 kablo çıkardınız bi tık saçma oldu ama öyle
@@ -46,7 +50,57 @@ end entity;
 -- Architecture
 architecture Kaiser of alu is
 
+    signal alu_internal_result : std_logic_vector(DATA_WIDTH-1 downto 0);
+    
+    
+
 begin
+
+    process(all) -- Burası bir kablonun çıkış kısmıdır yani elektrik sinaylinin çıkış kısmıdır
+    begin
+        case alu_ctrl is 
+            when "00000" =>
+
+            alu_internal_result <= std_logic_vector(unsigned(a) + unsigned(b));
+
+            when "00001" => 
+            alu_internal_result <= std_logic_vector(unsigned(a) - unsigned(b));
+            when "00010" =>
+            alu_internal_result <= a and b;
+            when "00011" =>
+            alu_internal_result <= a or b;
+            when "00100" =>
+            alu_internal_result <= a xor b;
+            when "00101" =>
+            alu_internal_result <= not(a or b);
+            when "00110" =>
+            alu_internal_result <= std_logic_vector(shift_left(unsigned(a), to_integer(unsigned(shamt))));
+            when "00111" =>
+            alu_internal_result <= std_logic_vector(shift_right(unsigned(a), to_integer(unsigned(shamt))));
+            when "01000" =>
+            alu_internal_result <= std_logic_vector(shift_right(signed(a), to_integer(unsigned(shamt))));
+            when "01001" =>
+            if signed(a) < signed(b) then
+            alu_internal_result <= x"00000001";
+            else
+            alu_internal_result <= x"00000000";
+            end if;
+            when "01010" =>
+            if unsigned(a) < unsigned(b) then
+                alu_internal_result <= (others => '1');
+            else
+                alu_internal_result <= (others => '0');
+            end if;
+            when others =>
+            alu_internal_result <= (others => '0');
+                
+                
+        end case;
+        end process;
+
+        result <= alu_internal_result;
+
+        zero <= '1' when (alu_internal_result = x"0000_0000") else '0';
 
     
 
