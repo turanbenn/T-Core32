@@ -50,7 +50,31 @@ end entity;
 -- Architecture
 architecture Kaiser of alu is
 
+    signal alu_internal_result : std_logic_vector(DATA_WIDTH-1 downto 0);
+    
+    signal diff : signed(DATA_WIDTH-1 downto 0);
+    
+
 begin
+
+    process(a, b, alu_ctrl, shamt, alu_internal_result) -- Burası bir kablonun çıkış kısmıdır
+    begin
+        case alu_ctrl is 
+            when "00000" =>
+
+            alu_internal_result <= std_logic_vector(unsigned(a) + unsigned(b));
+
+            when "00001" => 
+            alu_internal_result <= std_logic_vector(unsigned(a) - unsigned(b));
+            when "00010" =>
+            alu_internal_result <= a and b;
+
+            when others =>
+            alu_internal_result <= (others => '0');
+                
+                
+        end case;
+        end process;
 
     
 
