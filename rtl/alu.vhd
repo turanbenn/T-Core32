@@ -57,7 +57,7 @@ architecture Kaiser of alu is
 
 begin
 
-    process(a, b, alu_ctrl, shamt, alu_internal_result) -- Burası bir kablonun çıkış kısmıdır
+    process(a, b, alu_ctrl, shamt, alu_internal_result) -- Burası bir kablonun çıkış kısmıdır yani elektrik sinaylinin çıkış kısmıdır
     begin
         case alu_ctrl is 
             when "00000" =>
@@ -75,6 +75,10 @@ begin
                 
         end case;
         end process;
+
+        result <= alu_internal_result;
+        
+        zero <= '1' when (alu_internal_result = x"0000_0000") else '0';
 
     
 
